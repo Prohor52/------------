@@ -71,9 +71,10 @@ function App() {
   // Ссылки для DOM-манипуляций
   const chatBottomRef = useRef(null);
 
-  // Конфигурация API
+  // Конфигурация API (ИСПРАВЛЕНО ДЛЯ RENDER)
   const DISCORD_CLIENT_ID = '1493708400847093891';
-  const REDIRECT_URL = 'https://z1ylfalp0m.onrender.com';
+  const API_URL = window.location.origin; 
+  const REDIRECT_URL = window.location.origin;
   const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1493683255042506752/tftDYrEwUHbaQMqEq8gVkgcmj_kLAwrQNJA3l2siO050tNhliRN1FcCfC_aktjtNtKEb";
 
   // --- ЭФФЕКТЫ (EFFECTS) ---
@@ -91,8 +92,8 @@ function App() {
     const authCode = params.get('code');
 
     if (authCode) {
-      console.log("Был получен код авторизации. Начинаем обмен...");
-      fetch(`/api/auth/discord`, {
+      console.log("Был получен код авторизации. Начинаем обмен через:", API_URL);
+      fetch(`${API_URL}/api/auth/discord`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: authCode })
@@ -125,7 +126,7 @@ function App() {
         }
       }
     }
-  }, []);
+  }, [API_URL]);
 
   // Скролл чата
   useEffect(() => {
@@ -225,7 +226,7 @@ function App() {
   // --- РЕНДЕР (UI) ---
   return (
     <div className={`App-Container ${isMobile ? 'mobile-mode' : ''}`} 
-         style={{ background: activeTab === 'create' ? (BACKGROUND_THEMES[selectedGame] || "#030308") : "#030308" }}>
+          style={{ background: activeTab === 'create' ? (BACKGROUND_THEMES[selectedGame] || "#030308") : "#030308" }}>
       
       {/* Шапка сайта */}
       <header className="site-header">
