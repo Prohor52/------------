@@ -1,0 +1,140 @@
+:root { color-scheme: dark; }
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #030308;
+  color: #fff;
+  overflow: hidden;
+}
+
+.App {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: 0.8s ease;
+}
+
+/* ФИКС: Вспомогательные классы */
+.text-center { text-center: center; }
+.text-center * { text-center: center; text-align: center; }
+.flex-center-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+/* Навбар */
+.navbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 15px 50px;
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+
+.nav-logo { font-weight: 800; font-size: 20px; letter-spacing: 1px; }
+.nav-logo span { color: #5865F2; }
+.glow-text { text-shadow: 0 0 15px rgba(88, 101, 242, 0.4); }
+
+.nav-links button {
+  background: none; border: none; color: #555;
+  cursor: pointer; margin: 0 15px; font-size: 14px; font-weight: 600;
+  transition: 0.2s;
+}
+.nav-links button.active { color: #fff; border-bottom: 2px solid #5865F2; padding-bottom: 3px; }
+
+/* Кнопка входа в Навбаре */
+.login-btn-nav {
+  background: #5865F2; border: none; color: #fff;
+  padding: 10px 24px; border-radius: 8px; font-weight: 700;
+  cursor: pointer; transition: 0.3s; font-size: 13px;
+}
+.login-btn-nav:hover { background: #4752c4; transform: translateY(-1px); box-shadow: 0 5px 15px rgba(88, 101, 242, 0.2); }
+
+/* Карточки */
+.content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
+
+.main-card {
+  width: 640px; height: 550px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  backdrop-filter: blur(30px);
+  display: flex; flex-direction: column;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.7);
+  overflow: hidden;
+}
+
+.form-padding, .info-padding { padding: 40px; }
+h3 { font-size: 24px; font-weight: 800; margin: 0 0 30px; }
+
+.input-group { margin-bottom: 20px; display: flex; flex-direction: column; flex: 1; text-align: left; }
+.input-group label { font-size: 10px; text-transform: uppercase; color: #444; margin-bottom: 8px; font-weight: 800; letter-spacing: 1px; }
+
+.dark-input {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 14px 18px; border-radius: 12px;
+  color: #fff; font-size: 14px; outline: none; width: 100%; box-sizing: border-box;
+}
+
+.themed-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 14px;
+  padding-right: 40px !important;
+  cursor: pointer;
+}
+
+.themed-select option {
+  background-color: #0d0d1a !important;
+  color: white !important;
+}
+
+/* ЧАТ - Авторизованное состояние */
+.card-header { padding: 15px 25px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #888; font-size: 11px; font-weight: 700; display: flex; align-items: center; }
+.card-header span { width: 6px; height: 6px; background: #4ade80; border-radius: 50%; margin-right: 10px; box-shadow: 0 0 8px #4ade80; }
+
+.chat-box { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 15px; }
+.msg-row { display: flex; gap: 12px; max-width: 90%; text-align: left; }
+.msg-row.system { max-width: 100%; justify-content: center; align-self: center;}
+.chat-ava { width: 36px; height: 36px; border-radius: 10px; border: 1px solid rgba(88,101,242,0.2); }
+.msg-bubble { background: rgba(255, 255, 255, 0.03); padding: 10px 15px; border-radius: 0 15px 15px 15px; }
+.msg-user { display: block; font-size: 11px; font-weight: 800; color: #5865F2; margin-bottom: 3px; }
+.msg-text { font-size: 14px; color: #eee; line-height: 1.5; }
+.system .msg-bubble { background: rgba(88, 101, 242, 0.1); border-radius: 10px; color: #888; font-size: 12px; border: 1px solid rgba(88, 101, 242, 0.2); }
+
+.input-box { padding: 20px; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.03); }
+.input-box input { width: 100%; padding: 14px 20px; background: #05050a; border: 1px solid #1a1a1a; border-radius: 12px; color: #fff; outline: none; box-sizing: border-box; }
+
+/* Состояние: Не авторизован - Уникальная кнопка внутри карточки */
+.main-btn-auth {
+  background: #5865F2; border: none; padding: 16px 40px; border-radius: 12px;
+  color: #fff; font-size: 14px; font-weight: 800; cursor: pointer;
+  transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+}
+.main-btn-auth:hover { background: #4752c4; transform: scale(1.02); box-shadow: 0 10px 20px rgba(88, 101, 242, 0.3); }
+
+/* Остальное */
+.scrollable-rules { overflow-y: auto; padding: 40px; }
+.rules-list p { font-size: 13px; line-height: 1.6; margin-bottom: 15px; color: #aaa; text-align: left; padding-left: 15px; border-left: 2px solid #222; }
+.rules-list p span { color: #5865F2; font-weight: 800; }
+
+.main-btn {
+  background: #5865F2; border: none; padding: 18px; border-radius: 14px;
+  color: #fff; font-size: 15px; font-weight: 800; cursor: pointer;
+  transition: 0.3s; margin-top: 15px; text-transform: uppercase; width: 100%;
+}
+.main-btn:hover { background: #4752c4; transform: translateY(-2px); }
+
+.user-profile { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 8px 16px; border-radius: 25px; cursor: pointer; }
+.user-profile img { width: 24px; height: 24px; border-radius: 50%; }
+.user-profile:hover { background: rgba(255,255,255,0.08); }
+
+.discord-fixed-btn { position: fixed; left: 30px; bottom: 30px; padding: 12px 25px; background: rgba(88,101,242,0.1); border: 1px solid #5865F2; border-radius: 10px; color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; }
+
+.animate-in { animation: fadeInUp 0.6s ease-out; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
