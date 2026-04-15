@@ -1,472 +1,384 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './App.css'; // БЕЗ ЭТОГО ФАЙЛА КРАСОТЫ НЕ БУДЕТ
+import './App.css'; 
 
 /**
  * =============================================================================
- * КОНСТАНТЫ И ДАННЫЕ ПРИЛОЖЕНИЯ (МАССИВНЫЙ БЛОК)
+ * TEAMFINDER PROJECT v2.0 - MASTER SOURCE CODE
+ * =============================================================================
+ * РАСШИРЕННАЯ БАЗА ДАННЫХ ДИСЦИПЛИН И РАНГОВ
+ * (Обеспечивает визуальное разнообразие и точность подбора)
  * =============================================================================
  */
 
 const RANKS_DATA = {
-  "CS2": [
-    { name: "Silver I", color: "#9da2ad" },
-    { name: "Silver II", color: "#9da2ad" },
-    { name: "Silver III", color: "#9da2ad" },
-    { name: "Silver IV", color: "#9da2ad" },
-    { name: "Silver Elite", color: "#9da2ad" },
-    { name: "Silver Elite Master", color: "#9da2ad" },
-    { name: "Gold Nova I", color: "#d9bc3d" },
-    { name: "Gold Nova II", color: "#d9bc3d" },
-    { name: "Gold Nova III", color: "#d9bc3d" },
-    { name: "Gold Nova Master", color: "#d9bc3d" },
-    { name: "Master Guardian I", color: "#4b69ff" },
-    { name: "Master Guardian II", color: "#4b69ff" },
-    { name: "Master Guardian Elite", color: "#4b69ff" },
-    { name: "Distinguished Master Guardian", color: "#8847ff" },
-    { name: "Legendary Eagle", color: "#8847ff" },
-    { name: "Legendary Eagle Master", color: "#8847ff" },
-    { name: "Supreme Master First Class", color: "#eb4b4b" },
-    { name: "The Global Elite", color: "#eb4b4b" }
+  "Counter-Strike 2": [
+    { name: "Silver I", color: "#9da2ad" }, { name: "Silver II", color: "#9da2ad" },
+    { name: "Silver III", color: "#9da2ad" }, { name: "Silver IV", color: "#9da2ad" },
+    { name: "Silver Elite", color: "#9da2ad" }, { name: "Silver Elite Master", color: "#9da2ad" },
+    { name: "Gold Nova I", color: "#d9bc3d" }, { name: "Gold Nova II", color: "#d9bc3d" },
+    { name: "Gold Nova III", color: "#d9bc3d" }, { name: "Gold Nova Master", color: "#d9bc3d" },
+    { name: "Master Guardian I", color: "#4b69ff" }, { name: "Master Guardian II", color: "#4b69ff" },
+    { name: "Master Guardian Elite", color: "#4b69ff" }, { name: "Distinguished Master Guardian", color: "#8847ff" },
+    { name: "Legendary Eagle", color: "#8847ff" }, { name: "Legendary Eagle Master", color: "#8847ff" },
+    { name: "Supreme Master First Class", color: "#eb4b4b" }, { name: "The Global Elite", color: "#eb4b4b" }
   ],
   "Dota 2": [
-    { name: "Herald (1-5)", color: "#5c4c3c" },
-    { name: "Guardian (1-5)", color: "#5c4c3c" },
-    { name: "Crusader (1-5)", color: "#4c6c7c" },
-    { name: "Archon (1-5)", color: "#4c6c7c" },
-    { name: "Legend (1-5)", color: "#8cacc1" },
-    { name: "Ancient (1-5)", color: "#8cacc1" },
-    { name: "Divine (1-5)", color: "#f1c232" },
-    { name: "Immortal", color: "#e5c100" }
+    { name: "Herald I", color: "#5c4c3c" }, { name: "Herald II", color: "#5c4c3c" },
+    { name: "Herald III", color: "#5c4c3c" }, { name: "Herald IV", color: "#5c4c3c" },
+    { name: "Herald V", color: "#5c4c3c" }, { name: "Guardian I", color: "#5c4c3c" },
+    { name: "Guardian II", color: "#5c4c3c" }, { name: "Guardian III", color: "#5c4c3c" },
+    { name: "Guardian IV", color: "#5c4c3c" }, { name: "Guardian V", color: "#5c4c3c" },
+    { name: "Crusader I", color: "#4c6c7c" }, { name: "Crusader II", color: "#4c6c7c" },
+    { name: "Crusader III", color: "#4c6c7c" }, { name: "Crusader IV", color: "#4c6c7c" },
+    { name: "Crusader V", color: "#4c6c7c" }, { name: "Archon I", color: "#4c6c7c" },
+    { name: "Archon II", color: "#4c6c7c" }, { name: "Archon III", color: "#4c6c7c" },
+    { name: "Archon IV", color: "#4c6c7c" }, { name: "Archon V", color: "#4c6c7c" },
+    { name: "Legend I", color: "#8cacc1" }, { name: "Legend II", color: "#8cacc1" },
+    { name: "Legend III", color: "#8cacc1" }, { name: "Legend IV", color: "#8cacc1" },
+    { name: "Legend V", color: "#8cacc1" }, { name: "Ancient I", color: "#8cacc1" },
+    { name: "Ancient II", color: "#8cacc1" }, { name: "Ancient III", color: "#8cacc1" },
+    { name: "Ancient IV", color: "#8cacc1" }, { name: "Ancient V", color: "#8cacc1" },
+    { name: "Divine I", color: "#f1c232" }, { name: "Divine II", color: "#f1c232" },
+    { name: "Divine III", color: "#f1c232" }, { name: "Divine IV", color: "#f1c232" },
+    { name: "Divine V", color: "#f1c232" }, { name: "Immortal", color: "#e5c100" }
   ],
   "Valorant": [
-    { name: "Iron", color: "#515151" },
-    { name: "Bronze", color: "#815d31" },
-    { name: "Silver", color: "#9da2ad" },
-    { name: "Gold", color: "#d9bc3d" },
-    { name: "Platinum", color: "#4b69ff" },
-    { name: "Diamond", color: "#b382d6" },
-    { name: "Ascendant", color: "#3ea350" },
-    { name: "Immortal", color: "#eb4b4b" },
+    { name: "Iron 1", color: "#515151" }, { name: "Iron 2", color: "#515151" }, { name: "Iron 3", color: "#515151" },
+    { name: "Bronze 1", color: "#815d31" }, { name: "Bronze 2", color: "#815d31" }, { name: "Bronze 3", color: "#815d31" },
+    { name: "Silver 1", color: "#9da2ad" }, { name: "Silver 2", color: "#9da2ad" }, { name: "Silver 3", color: "#9da2ad" },
+    { name: "Gold 1", color: "#d9bc3d" }, { name: "Gold 2", color: "#d9bc3d" }, { name: "Gold 3", color: "#d9bc3d" },
+    { name: "Platinum 1", color: "#4b69ff" }, { name: "Platinum 2", color: "#4b69ff" }, { name: "Platinum 3", color: "#4b69ff" },
+    { name: "Diamond 1", color: "#b382d6" }, { name: "Diamond 2", color: "#b382d6" }, { name: "Diamond 3", color: "#b382d6" },
+    { name: "Ascendant 1", color: "#3ea350" }, { name: "Ascendant 2", color: "#3ea350" }, { name: "Ascendant 3", color: "#3ea350" },
+    { name: "Immortal 1", color: "#eb4b4b" }, { name: "Immortal 2", color: "#eb4b4b" }, { name: "Immortal 3", color: "#eb4b4b" },
     { name: "Radiant", color: "#ffebb0" }
   ]
 };
 
-const BACKGROUND_THEMES = {
-  "CS2": "radial-gradient(circle at 50% -10%, #16203d 0%, #030308 50%)",
-  "Dota 2": "radial-gradient(circle at 50% -10%, #2a163d 0%, #030308 50%)",
-  "Valorant": "radial-gradient(circle at 50% -10%, #3d1616 0%, #030308 50%)"
-};
-
-const UI_STRINGS = {
-  lobbyTitle: "Глобальное лобби поиска игроков",
-  createTitle: "Создание новой заявки в Discord",
-  rulesTitle: "Свод правил и положений сообщества",
-  footerText: "© 2026 TeamFinder Project. Все права защищены. Работает на Discord OAuth2."
+/**
+ * ЦВЕТОВЫЕ ТЕМЫ ДЛЯ КАЖДОЙ ИГРЫ (ГРАДИЕНТЫ ЗАДНЕГО ФОНА)
+ */
+const BG_THEMES = {
+  "Counter-Strike 2": "radial-gradient(circle at 50% -10%, #1c2b54 0%, #030308 60%)",
+  "Dota 2": "radial-gradient(circle at 50% -10%, #3d165c 0%, #030308 60%)",
+  "Valorant": "radial-gradient(circle at 50% -10%, #5c1616 0%, #030308 60%)"
 };
 
 /**
- * =============================================================================
  * ОСНОВНОЙ КОМПОНЕНТ ПРИЛОЖЕНИЯ
- * =============================================================================
+ * Логика переключения вкладок, авторизации и работы с Discord API
  */
-
 function App() {
-  // --- СОСТОЯНИЯ (STATES) ---
+  // Состояния для хранения данных пользователя
+  const [currentUser, setCurrentUser] = useState(null);
   const [messages, setMessages] = useState([]);
+  
+  // Состояния интерфейса
   const [activeTab, setActiveTab] = useState('lobby');
-  const [selectedGame, setSelectedGame] = useState("CS2");
+  const [selectedGame, setSelectedGame] = useState("Counter-Strike 2");
   const [selectedRankIdx, setSelectedRankIdx] = useState(0);
   const [gameTime, setGameTime] = useState("");
   const [userComment, setUserComment] = useState("");
-  const [currentUser, setCurrentUser] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
-  // Референсы
-  const chatBottomRef = useRef(null);
+  // Референс для авто-скролла чата
+  const chatEndRef = useRef(null);
 
-  // Конфиг (ИСПРАВЛЕНО ДЛЯ RENDER)
+  // Константы окружения
   const DISCORD_CLIENT_ID = '1493708400847093891';
-  const API_URL = window.location.origin; 
-  const REDIRECT_URL = window.location.origin;
-  const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1493683255042506752/tftDYrEwUHbaQMqEq8gVkgcmj_kLAwrQNJA3l2siO050tNhliRN1FcCfC_aktjtNtKEb";
+  const REDIRECT_URI = window.location.origin;
+  const API_ENDPOINT = window.location.origin;
+  const WEBHOOK_URL = "https://discord.com/api/webhooks/1493683255042506752/tftDYrEwUHbaQMqEq8gVkgcmj_kLAwrQNJA3l2siO050tNhliRN1FcCfC_aktjtNtKEb";
 
-  // --- ЭФФЕКТЫ ---
-
+  /**
+   * Эффект инициализации приложения и проверки авторизации
+   */
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const authCode = params.get('code');
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
 
-    if (authCode) {
-      console.log("Обнаружен код авторизации. Выполняю запрос к серверу...");
-      setIsLoading(true);
-      fetch(`${API_URL}/api/auth/discord`, {
+    if (code) {
+      // Обмен кода на данные пользователя через бэкенд
+      fetch(`${API_ENDPOINT}/api/auth/discord`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: authCode })
+        body: JSON.stringify({ code })
       })
-      .then(res => {
-        if (!res.ok) throw new Error("Ошибка сервера при авторизации");
-        return res.json();
-      })
-      .then(userData => {
-        if (userData && userData.name) {
-          setCurrentUser(userData);
-          localStorage.setItem('tf_user_session', JSON.stringify(userData));
+      .then(res => res.json())
+      .then(user => {
+        if (user && user.name) {
+          setCurrentUser(user);
+          localStorage.setItem('tf_session', JSON.stringify(user));
           window.history.replaceState({}, document.title, "/");
         }
       })
-      .catch(err => {
-        console.error("Ошибка авторизации:", err);
-        alert("Не удалось авторизоваться. Убедитесь, что бэкенд запущен!");
-      })
-      .finally(() => setIsLoading(false));
+      .catch(err => console.error("Ошибка OAuth:", err));
     } else {
-      const stored = localStorage.getItem('tf_user_session');
-      if (stored) {
-        try {
-          setCurrentUser(JSON.parse(stored));
-        } catch (e) {
-          localStorage.removeItem('tf_user_session');
-        }
+      const savedSession = localStorage.getItem('tf_session');
+      if (savedSession) {
+        try { setCurrentUser(JSON.parse(savedSession)); } 
+        catch (e) { localStorage.removeItem('tf_session'); }
       }
     }
-  }, [API_URL]);
 
+    return () => window.removeEventListener('resize', handleResize);
+  }, [API_ENDPOINT]);
+
+  /**
+   * Скролл чата при появлении новых сообщений
+   */
   useEffect(() => {
-    if (chatBottomRef.current) {
-      chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, activeTab]);
 
-  // --- ОБРАБОТЧИКИ ---
-
-  const handleLogin = () => {
-    console.log("Перенаправление на OAuth Discord...");
-    const url = `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URL)}&scope=identify`;
-    window.location.href = url;
+  /**
+   * Функция входа через Discord
+   */
+  const loginWithDiscord = () => {
+    const oauthUrl = `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=identify`;
+    window.location.href = oauthUrl;
   };
 
-  const handleLogout = () => {
-    if (window.confirm("Вы уверены, что хотите выйти из профиля?")) {
+  /**
+   * Функция выхода
+   */
+  const logout = () => {
+    if (window.confirm("Выйти из системы?")) {
       setCurrentUser(null);
-      localStorage.removeItem('tf_user_session');
+      localStorage.removeItem('tf_session');
       window.location.reload();
     }
   };
 
-  const sendMessage = async (text) => {
-    if (!currentUser) return handleLogin();
-    if (!text.trim()) return;
+  /**
+   * Отправка сообщения в глобальный чат
+   */
+  const handleSendMessage = async (val) => {
+    if (!currentUser) return loginWithDiscord();
+    if (!val.trim()) return;
 
-    const newMessage = {
+    const newMsg = {
       id: Date.now(),
-      author: currentUser.name,
-      content: text,
+      user: currentUser.name,
+      text: val,
       avatar: currentUser.avatar,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    setMessages(prev => [...prev, newMessage]);
+    setMessages(prev => [...prev, newMsg]);
 
     try {
-      await fetch(DISCORD_WEBHOOK, {
+      await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: currentUser.name,
           avatar_url: currentUser.avatar,
-          content: `**[ЧАТ САЙТА]**: ${text}`
+          content: `**[Глобальный Чат]**: ${val}`
         })
       });
-    } catch (e) {
-      console.warn("Вебхук чата не сработал, но сообщение добавлено локально.");
-    }
+    } catch (e) { console.error("Webhook error:", e); }
   };
 
-  const submitApplication = async () => {
-    if (!currentUser) return handleLogin();
-    if (!gameTime || !userComment) {
-      alert("Пожалуйста, заполните все поля формы!");
-      return;
-    }
+  /**
+   * Публикация заявки на поиск тимейтов
+   */
+  const postApplication = async () => {
+    if (!currentUser) return loginWithDiscord();
+    if (!gameTime || !userComment) return alert("Заполни все поля, боец!");
 
+    setIsSending(true);
     const rank = RANKS_DATA[selectedGame][selectedRankIdx];
     
-    const embed = {
+    const embedData = {
       embeds: [{
-        title: "🚀 НОВАЯ ЗАЯВКА НА ПОИСК",
+        title: "🚀 ИЩУ ТИМЕЙТОВ!",
         description: userComment,
         color: parseInt(rank.color.replace('#', ''), 16),
         thumbnail: { url: currentUser.avatar },
-        author: { name: currentUser.name },
         fields: [
-          { name: "🎮 Игра", value: selectedGame, inline: true },
-          { name: "🏆 Ранг", value: rank.name, inline: true },
-          { name: "⏰ Время", value: gameTime, inline: true }
+          { name: "Игра", value: selectedGame, inline: true },
+          { name: "Ранг", value: rank.name, inline: true },
+          { name: "Когда играем", value: gameTime, inline: true }
         ],
-        footer: { text: "Отправлено через TeamFinder Web" },
-        timestamp: new Date().toISOString()
+        footer: { text: `Отправил: ${currentUser.name}` }
       }]
     };
 
-    setIsLoading(true);
     try {
-      const response = await fetch(DISCORD_WEBHOOK, {
+      const res = await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(embed)
+        body: JSON.stringify(embedData)
       });
-
-      if (response.ok) {
-        alert("Заявка успешно опубликована в Discord!");
+      if (res.ok) {
+        alert("Заявка улетела в Discord!");
+        setActiveTab('lobby');
         setGameTime("");
         setUserComment("");
-        setActiveTab('lobby');
-      } else {
-        throw new Error("Discord Webhook Error");
       }
-    } catch (e) {
-      alert("Ошибка при отправке в Discord. Проверьте настройки вебхука.");
-    } finally {
-      setIsLoading(false);
-    }
+    } catch (e) { alert("Ошибка при отправке."); }
+    finally { setIsSending(false); }
   };
 
-  // --- ВЕРСТКА ПРИЛОЖЕНИЯ ---
-
+  // Рендеринг интерфейса
   return (
-    <div 
-      className={`App-Wrapper ${isMobile ? 'is-mobile' : 'is-desktop'}`}
-      style={{ 
-        background: activeTab === 'create' 
-          ? (BACKGROUND_THEMES[selectedGame] || "#030308") 
-          : "#030308" 
-      }}
-    >
-      {/* HEADER SECTION */}
-      <header className="header-main">
-        <div className="container header-inner">
-          <div className="logo-group" onClick={() => window.location.href = '/'}>
-            <div className="logo-icon">TF</div>
-            <h1 className="logo-text">TEAM<span>FINDER</span></h1>
+    <div className={`App-Main ${isMobile ? 'is-mobile' : ''}`} 
+         style={{ background: activeTab === 'create' ? (BG_THEMES[selectedGame] || "#030308") : "#030308" }}>
+      
+      {/* ШАПКА САЙТА */}
+      <header className="site-header">
+        <div className="container header-flex">
+          <div className="brand" onClick={() => window.location.href = '/'}>
+            <div className="brand-logo">TF</div>
+            <h1 className="brand-name">TEAM<span>FINDER</span></h1>
           </div>
 
-          <nav className="nav-bar">
-            <button 
-              className={`nav-link ${activeTab === 'lobby' ? 'is-active' : ''}`}
-              onClick={() => setActiveTab('lobby')}
-            >
-              ЛОББИ
-            </button>
-            <button 
-              className={`nav-link ${activeTab === 'create' ? 'is-active' : ''}`}
-              onClick={() => setActiveTab('create')}
-            >
-              ПОИСК ИГРОКОВ
-            </button>
-            <button 
-              className={`nav-link ${activeTab === 'rules' ? 'is-active' : ''}`}
-              onClick={() => setActiveTab('rules')}
-            >
-              ПРАВИЛА
-            </button>
+          <nav className="site-nav">
+            <button className={activeTab === 'lobby' ? 'active' : ''} onClick={() => setActiveTab('lobby')}>ЛОББИ</button>
+            <button className={activeTab === 'create' ? 'active' : ''} onClick={() => setActiveTab('create')}>ПОИСК ИГРОКОВ</button>
+            <button className={activeTab === 'rules' ? 'active' : ''} onClick={() => setActiveTab('rules')}>ПРАВИЛА</button>
           </nav>
 
-          <div className="user-controls">
+          <div className="auth-zone">
             {currentUser ? (
-              <div className="profile-capsule" onClick={handleLogout}>
-                <img src={currentUser.avatar} alt="Avatar" className="avatar-img" />
-                <span className="profile-name">{currentUser.name}</span>
+              <div className="profile-badge" onClick={logout}>
+                <img src={currentUser.avatar} alt="Ava" />
+                <span>{currentUser.name}</span>
               </div>
             ) : (
-              <button className="btn-discord" onClick={handleLogin}>
-                {isLoading ? "ВХОД..." : "ВОЙТИ С DISCORD"}
-              </button>
+              <button className="login-btn" onClick={loginWithDiscord}>ВОЙТИ ЧЕРЕЗ DISCORD</button>
             )}
           </div>
         </div>
       </header>
 
-      {/* MAIN CONTENT AREA */}
-      <main className="container content-main">
+      {/* КОНТЕНТНАЯ ОБЛАСТЬ */}
+      <main className="container main-content">
         
-        {/* TAB: LOBBY / CHAT */}
+        {/* ВКЛАДКА ЧАТА */}
         {activeTab === 'lobby' && (
-          <section className="section-lobby animate-in">
-            <div className="card chat-card">
-              <div className="chat-header">
-                <h3>{UI_STRINGS.lobbyTitle}</h3>
-                <span className="badge-online">LIVE</span>
-              </div>
-              
-              <div className="chat-messages-box">
+          <section className="tab-section chat-section">
+            <div className="glass-card chat-card">
+              <div className="chat-info">Глобальный чат сообщества • {messages.length} сообщений</div>
+              <div className="chat-window">
                 {messages.length === 0 ? (
-                  <div className="empty-state">
-                    <p>Сообщений пока нет. Станьте первым!</p>
-                  </div>
+                  <div className="chat-empty">Здесь пока тихо... Напиши что-нибудь!</div>
                 ) : (
-                  <div className="messages-scroll">
-                    {messages.map((m) => (
-                      <div key={m.id} className="msg-row">
-                        <img src={m.avatar} className="msg-avatar" alt="" />
-                        <div className="msg-body">
-                          <div className="msg-info">
-                            <span className="msg-author">{m.author}</span>
-                            <span className="msg-time">{m.timestamp}</span>
+                  <div className="msg-list">
+                    {messages.map(m => (
+                      <div key={m.id} className="msg-item animate-fade">
+                        <img src={m.avatar} className="msg-ava" alt="" />
+                        <div className="msg-content">
+                          <div className="msg-head">
+                            <span className="msg-user">{m.user}</span>
+                            <span className="msg-time">{m.time}</span>
                           </div>
-                          <p className="msg-text">{m.content}</p>
+                          <p className="msg-text">{m.text}</p>
                         </div>
                       </div>
                     ))}
-                    <div ref={chatBottomRef} />
+                    <div ref={chatEndRef} />
                   </div>
                 )}
               </div>
-
-              <div className="chat-input-bar">
+              <div className="chat-footer">
                 {!currentUser ? (
-                  <div className="input-locked">
-                    <p>Чтобы отправлять сообщения, необходимо авторизоваться</p>
-                  </div>
+                  <div className="locked-input" onClick={loginWithDiscord}>Войдите, чтобы писать в чат</div>
                 ) : (
-                  <div className="input-group">
-                    <input 
-                      type="text" 
-                      placeholder="Напишите что-нибудь в чат..."
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          sendMessage(e.target.value);
-                          e.target.value = '';
-                        }
-                      }}
-                    />
-                    <button className="btn-send">➤</button>
-                  </div>
+                  <input 
+                    className="chat-input" 
+                    placeholder="Ваше сообщение..." 
+                    onKeyDown={e => { if(e.key === 'Enter') { handleSendMessage(e.target.value); e.target.value=''; }}}
+                  />
                 )}
               </div>
             </div>
           </section>
         )}
 
-        {/* TAB: CREATE APPLICATION */}
+        {/* ВКЛАДКА СОЗДАНИЯ ЗАЯВКИ */}
         {activeTab === 'create' && (
-          <section className="section-create animate-in">
-            <div className="card form-card">
-              <h2 className="card-title">{UI_STRINGS.createTitle}</h2>
-              
-              <div className="form-layout">
-                <div className="form-group span-2">
-                  <label>Выберите дисциплину</label>
-                  <select 
-                    value={selectedGame} 
-                    onChange={(e) => { setSelectedGame(e.target.value); setSelectedRankIdx(0); }}
-                  >
-                    {Object.keys(RANKS_DATA).map(game => (
-                      <option key={game} value={game}>{game}</option>
-                    ))}
+          <section className="tab-section create-section">
+            <div className="glass-card form-card animate-slide">
+              <h2 className="tab-title">СОЗДАТЬ ЗАЯВКУ НА ПОИСК</h2>
+              <div className="form-grid">
+                <div className="input-group full">
+                  <label>Выбери игру</label>
+                  <select className="tf-input" value={selectedGame} onChange={e => {setSelectedGame(e.target.value); setSelectedRankIdx(0);}}>
+                    {Object.keys(RANKS_DATA).map(game => <option key={game} value={game}>{game}</option>)}
                   </select>
                 </div>
-
-                <div className="form-group">
-                  <label>Ваш текущий ранг</label>
+                <div className="input-group">
+                  <label>Твой ранг</label>
                   <select 
+                    className="tf-input" 
                     style={{ color: RANKS_DATA[selectedGame][selectedRankIdx].color, fontWeight: 'bold' }}
                     value={selectedRankIdx}
-                    onChange={(e) => setSelectedRankIdx(parseInt(e.target.value))}
+                    onChange={e => setSelectedRankIdx(parseInt(e.target.value))}
                   >
-                    {RANKS_DATA[selectedGame].map((rank, index) => (
-                      <option key={index} value={index} style={{ color: rank.color }}>
-                        {rank.name}
-                      </option>
-                    ))}
+                    {RANKS_DATA[selectedGame].map((r, i) => <option key={i} value={i}>{r.name}</option>)}
                   </select>
                 </div>
-
-                <div className="form-group">
-                  <label>Время начала игры</label>
-                  <input 
-                    type="text" 
-                    placeholder="Напр: сейчас / 18:00 МСК" 
-                    value={gameTime}
-                    onChange={(e) => setGameTime(e.target.value)}
-                  />
+                <div className="input-group">
+                  <label>Когда играем?</label>
+                  <input className="tf-input" placeholder="Напр: прямо сейчас / через час" value={gameTime} onChange={e => setGameTime(e.target.value)} />
                 </div>
-
-                <div className="form-group span-2">
-                  <label>Дополнительная информация</label>
-                  <textarea 
-                    placeholder="Опишите, кого вы ищете, требования к микрофону, возрасту и т.д."
-                    rows="4"
-                    value={userComment}
-                    onChange={(e) => setUserComment(e.target.value)}
-                  ></textarea>
-                </div>
-
-                <div className="form-actions span-2">
-                  <button 
-                    className="btn-primary" 
-                    onClick={submitApplication}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "ОТПРАВКА..." : "ОПУБЛИКОВАТЬ ЗАЯВКУ"}
-                  </button>
+                <div className="input-group full">
+                  <label>О себе / Требования</label>
+                  <textarea className="tf-textarea" placeholder="Напр: ищу +2 в мм, 18+, адекватность" value={userComment} onChange={e => setUserComment(e.target.value)} />
                 </div>
               </div>
+              <button className="post-btn" onClick={postApplication} disabled={isSending}>
+                {isSending ? "ОТПРАВЛЯЕМ..." : "ОПУБЛИКОВАТЬ В DISCORD"}
+              </button>
             </div>
           </section>
         )}
 
-        {/* TAB: RULES */}
+        {/* ВКЛАДКА ПРАВИЛ */}
         {activeTab === 'rules' && (
-          <section className="section-rules animate-in">
-            <div className="card rules-card">
-              <h2 className="card-title">{UI_STRINGS.rulesTitle}</h2>
-              <div className="rules-content">
-                <div className="rule-item">
+          <section className="tab-section rules-section animate-fade">
+            <div className="glass-card rules-card">
+              <h2 className="tab-title">ПРАВИЛА СООБЩЕСТВА</h2>
+              <div className="rules-grid">
+                <div className="rule-box">
                   <span className="rule-num">01</span>
-                  <div className="rule-text">
-                    <h4>Культура общения</h4>
-                    <p>Запрещены любые проявления токсичности, расизма или оскорблений в общем чате или Discord сервере.</p>
-                  </div>
+                  <h3>Адекватность</h3>
+                  <p>Никакого мата, токсичности и оскорблений в чате. Уважайте своих будущих тимейтов.</p>
                 </div>
-                <div className="rule-item">
+                <div className="rule-box">
                   <span className="rule-num">02</span>
-                  <div className="rule-text">
-                    <h4>Достоверность данных</h4>
-                    <p>Указывайте свой реальный ранг. Обман других пользователей ведет к временной блокировке доступа.</p>
-                  </div>
+                  <h3>Честность</h3>
+                  <p>Указывайте свой реальный ранг. Обман вскроется в первой же катке, а репутация будет испорчена.</p>
                 </div>
-                <div className="rule-item">
+                <div className="rule-box">
                   <span className="rule-num">03</span>
-                  <div className="rule-text">
-                    <h4>Анти-спам</h4>
-                    <p>Не создавайте более одной заявки в 10 минут. Уважайте место в ленте других игроков.</p>
-                  </div>
+                  <h3>Анти-спам</h3>
+                  <p>Не создавайте более одной заявки за 10 минут. Дайте другим тоже найти себе команду.</p>
                 </div>
-                <div className="rule-item">
+                <div className="rule-box">
                   <span className="rule-num">04</span>
-                  <div className="rule-text">
-                    <h4>Безопасность</h4>
-                    <p>Никогда не передавайте свои учетные данные третьим лицам. Администрация никогда не просит пароль.</p>
-                  </div>
+                  <h3>Безопасность</h3>
+                  <p>Не переходите по подозрительным ссылкам от незнакомых людей. Администрация TF никогда не просит пароль.</p>
                 </div>
               </div>
             </div>
           </section>
         )}
+
       </main>
 
-      {/* FOOTER */}
-      <footer className="footer-main">
-        <div className="container footer-inner">
-          <p>{UI_STRINGS.footerText}</p>
+      {/* ПОДВАЛ */}
+      <footer className="site-footer">
+        <div className="container footer-content">
+          <p>© 2026 TeamFinder Project. Все права защищены. Powered by Discord API.</p>
         </div>
       </footer>
     </div>
