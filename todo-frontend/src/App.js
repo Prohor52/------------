@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
+// Константы рангов с цветами для каждой игры
 const RANKS = {
   "CS2": [
     { name: "Silver I-VI", color: "#9da2ad" },
@@ -46,6 +47,7 @@ const RANKS = {
   ]
 };
 
+// Градиенты для фона страницы под каждую игру
 const GAME_COLORS = {
   "CS2": "radial-gradient(circle at 50% -10%, #16203d 0%, #030308 50%)",
   "Dota 2": "radial-gradient(circle at 50% -10%, #2a163d 0%, #030308 50%)",
@@ -70,12 +72,12 @@ function App() {
   const REDIRECT_URI = 'https://z1ylfalp0m.onrender.com'; 
   const WEBHOOK = "https://discord.com/api/webhooks/1493683255042506752/tftDYrEwUHbaQMqEq8gVkgcmj_kLAwrQNJA3l2siO050tNhliRN1FcCfC_aktjtNtKEb";
 
+  // Эффект для обработки кода авторизации от Discord
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
-    
     if (code) {
-      fetch(`${REDIRECT_URI}/api/auth/discord`, {
+      fetch(`/api/auth/discord`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code })
@@ -88,17 +90,16 @@ function App() {
           window.history.replaceState({}, document.title, "/");
         }
       })
-      .catch(err => console.error("Discord Auth Error:", err));
+      .catch(err => console.error("Ошибка при авторизации через сервер:", err));
     } else {
       const saved = localStorage.getItem('tf_user');
       if (saved) setUser(JSON.parse(saved));
     }
   }, []);
 
-  useEffect(() => { 
-    if (activeTab === 'lobby' && messages.length > 0) {
-      chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); 
-    }
+  // Автопрокрутка чата вниз при новых сообщениях
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, activeTab]);
 
   const login = () => {
@@ -106,16 +107,11 @@ function App() {
     window.location.href = authUrl;
   };
 
-  const logout = () => {
-    if (window.confirm("Вы точно хотите выйти?")) {
-      setUser(null);
-      localStorage.removeItem('tf_user');
-    }
-  }
-
   const handleSendMessage = async (text) => {
     if (!user) return login();
-    const newMsg = { id: Date.now(), user: user.name, text: text, avatar: user.avatar };
+    if (!text.trim()) return;
+    
+    const newMsg = { id: Date.now(), user: user.name, text, avatar: user.avatar };
     setMessages(prev => [...prev, newMsg]);
     
     await fetch(WEBHOOK, {
@@ -131,50 +127,61 @@ function App() {
 
   const sendPost = async () => {
     if (!user) return login();
-    if (!comment || !customTime) return alert("Заполни все поля (Время и Описание)!");
-    const r = RANKS[game][rankIndex];
+    if (!comment || !customTime) {
+      alert("Пожалуйста, заполните время игры и краткое описание!");
+      return;
+    }
     
-    const systemMsg = { id: Date.now(), system: true, text: `${user.name} отправил запрос в ${game}` };
-    setMessages(prev => [...prev, systemMsg]);
-
+    const r = RANKS[game][rankIndex];
     const embed = {
       embeds: [{
-        title: "🎮 Игрок ищет команду!",
+        title: "🚀 Новый поиск напарника!",
         color: parseInt(r.color.replace('#', ''), 16),
         thumbnail: { url: user.avatar },
         fields: [
-          { name: "Игра", value: game, inline: true },
-          { name: "Ранг", value: r.name, inline: true },
-          { name: "Время игры", value: customTime, inline: true },
-          { name: "Описание", value: comment }
+          { name: "Выбранная игра", value: game, inline: true },
+          { name: "Текущий ранг", value: r.name, inline: true },
+          { name: "Когда играем", value: customTime, inline: true },
+          { name: "Доп. информация", value: comment }
         ],
-        footer: { text: "Отправлено через TeamFinder" }
+        footer: { text: "Отправлено через TeamFinder Web" }
       }]
     };
-
-    await fetch(WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(embed) });
-    setComment(""); setCustomTime(""); 
-    alert("Ваша заявка успешно отправлена в Discord канал!");
+    
+    await fetch(WEBHOOK, { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify(embed) 
+    });
+    
+    alert("Ваша заявка успешно опубликована!");
+    setComment("");
+    setCustomTime("");
     setActiveTab('lobby');
   };
 
   return (
     <div className="App" style={{ background: activeTab === 'create' ? (GAME_COLORS[game] || "#030308") : "#030308" }}>
+      {/* Встроенные стили для мобильной адаптации и оформления */}
       <style>{`
         @media (max-width: 768px) {
-          .navbar { padding: 10px; flex-direction: column; height: auto; gap: 15px; }
-          .nav-links { gap: 10px; flex-wrap: wrap; justify-content: center; }
-          .nav-links button { font-size: 13px; padding: 5px 10px; }
-          .main-card { width: 95% !important; margin: 10px auto; min-height: 400px; }
+          .navbar { padding: 10px; height: auto; flex-direction: column; gap: 15px; }
+          .nav-links { width: 100%; justify-content: space-around; display: flex; }
+          .nav-links button { font-size: 12px; padding: 8px; }
+          .main-card { width: 95% !important; margin: 10px auto !important; padding: 15px !important; }
           .row { flex-direction: column; gap: 10px !important; }
-          .discord-fixed-btn { width: 50px; height: 50px; font-size: 10px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; bottom: 20px; right: 20px; }
-          .chat-box { height: 350px; }
-          .dark-input { font-size: 16px; }
+          .chat-box { height: 350px !important; }
+          .dark-input { font-size: 16px !important; }
+          .discord-fixed-btn { width: 50px; height: 50px; font-size: 0; bottom: 20px; right: 20px; border-radius: 50%; }
         }
+        .animate-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
       <nav className="navbar">
-        <div className="nav-logo glow-text" onClick={() => window.location.reload()}>TEAM<span>FINDER</span></div>
+        <div className="nav-logo glow-text" onClick={() => window.location.reload()}>
+          TEAM<span>FINDER</span>
+        </div>
         <div className="nav-links">
           <button className={activeTab === 'lobby' ? 'active' : ''} onClick={() => setActiveTab('lobby')}>Общий чат</button>
           <button className={activeTab === 'create' ? 'active' : ''} onClick={() => setActiveTab('create')}>Поиск тимейтов</button>
@@ -182,34 +189,33 @@ function App() {
           <button className={activeTab === 'info' ? 'active' : ''} onClick={() => setActiveTab('info')}>О проекте</button>
         </div>
         {user ? (
-          <div className="user-profile" onClick={logout} style={{cursor: 'pointer', display: 'flex', gap: '10px', alignItems: 'center'}}>
-            <img src={user.avatar} alt="avatar" style={{width: '32px', borderRadius: '50%'}} />
-            <span style={{color: '#fff', fontSize: '14px'}}>{user.name}</span>
+          <div className="user-profile">
+            <img src={user.avatar} alt="ava" />
+            <span>{user.name}</span>
           </div>
         ) : (
-          <button className="login-btn-nav" onClick={login}>Войти через Discord</button>
+          <button className="login-btn-nav" onClick={login}>Войти в Discord</button>
         )}
       </nav>
 
       <main className="content">
         {activeTab === 'lobby' && (
           <div className="main-card animate-in">
-            <div className="card-header" style={{padding: '10px', fontSize: '11px', color: '#444', textTransform: 'uppercase', letterSpacing: '1px'}}>Discord Live Chat Bridge</div>
+            <h3 className="glow-text">Лобби общения</h3>
             {!user ? (
-              <div className="chat-box-auth-prompt flex-center-col" style={{height: '400px'}}>
-                <h2 className="glow-text">Чат TeamFinder</h2>
-                <p style={{color: '#666', marginBottom: '25px', textAlign: 'center'}}>Авторизуйтесь, чтобы видеть сообщения и общаться с игроками</p>
-                <button className="main-btn" style={{width: '240px'}} onClick={login}>Авторизоваться</button>
+              <div className="flex-center-col" style={{height: '300px'}}>
+                <p style={{color: '#666', marginBottom: '20px'}}>Нужна авторизация для участия в чате</p>
+                <button className="main-btn" onClick={login} style={{width: '200px'}}>Авторизоваться</button>
               </div>
             ) : (
               <>
                 <div className="chat-box">
-                  {messages.length === 0 && <div style={{textAlign: 'center', color: '#333', marginTop: '50px'}}>Сообщений пока нет... Начни первым!</div>}
+                  {messages.length === 0 && <p style={{textAlign: 'center', color: '#444', marginTop: '100px'}}>Сообщений пока нет...</p>}
                   {messages.map(m => (
-                    <div key={m.id} className={"msg-row " + (m.system ? 'system' : '')}>
-                      {!m.system && <img src={m.avatar} className="chat-ava" alt="user" />}
+                    <div key={m.id} className="msg-row">
+                      <img src={m.avatar} className="chat-ava" alt="u" />
                       <div className="msg-bubble">
-                        {!m.system && <span className="msg-user">{m.user}</span>}
+                        <span className="msg-user">{m.user}</span>
                         <span className="msg-text">{m.text}</span>
                       </div>
                     </div>
@@ -217,11 +223,15 @@ function App() {
                   <div ref={chatEndRef} />
                 </div>
                 <div className="input-box">
-                  <input placeholder="Напишите сообщение в чат..." onKeyDown={(e) => { 
-                    if (e.key === 'Enter' && e.target.value.trim()) { 
-                      handleSendMessage(e.target.value); e.target.value = ""; 
-                    } 
-                  }} />
+                  <input 
+                    placeholder="Введите ваше сообщение..." 
+                    onKeyDown={(e) => { 
+                      if (e.key === 'Enter' && e.target.value.trim()) { 
+                        handleSendMessage(e.target.value); 
+                        e.target.value = ""; 
+                      } 
+                    }} 
+                  />
                 </div>
               </>
             )}
@@ -229,47 +239,72 @@ function App() {
         )}
 
         {activeTab === 'create' && (
-          <div className="main-card animate-in form-padding" style={{padding: '30px'}}>
-            <h3 className="glow-text" style={{marginBottom: '20px'}}>Создать заявку на поиск</h3>
-            
-            <div className="form-section">
-              <label style={{color: '#888', display: 'block', marginBottom: '8px'}}>Выберите игру</label>
+          <div className="main-card animate-in form-container">
+            <h3 className="glow-text">Создание новой заявки</h3>
+            <div className="input-group">
+              <label>Выберите дисциплину</label>
               <select value={game} onChange={(e) => { setGame(e.target.value); setRankIndex(0); }} className="dark-input">
                 {Object.keys(RANKS).map(g => <option key={g} value={g}>{g}</option>)}
               </select>
             </div>
 
-            <div className="row" style={{display: 'flex', gap: '20px', marginTop: '20px'}}>
+            <div className="row" style={{display: 'flex', gap: '20px', marginTop: '15px'}}>
               <div style={{flex: 1}}>
-                <label style={{color: '#888', display: 'block', marginBottom: '8px'}}>Ваш текущий ранг</label>
-                <select className="dark-input" value={rankIndex} onChange={(e) => setRankIndex(parseInt(e.target.value))} style={{color: RANKS[game][rankIndex].color, fontWeight: 'bold'}}>
+                <label>Ваш уровень игры / Ранг</label>
+                <select className="dark-input" value={rankIndex} onChange={(e) => setRankIndex(parseInt(e.target.value))} style={{color: RANKS[game][rankIndex].color}}>
                   {RANKS[game].map((r, i) => <option key={i} value={i} style={{color: r.color}}>{r.name}</option>)}
                 </select>
               </div>
               <div style={{flex: 1}}>
-                <label style={{color: '#888', display: 'block', marginBottom: '8px'}}>Время игры</label>
-                <input className="dark-input" placeholder="Напр: сейчас / до вечера" value={customTime} onChange={e => setCustomTime(e.target.value)} />
+                <label>Время начала игры</label>
+                <input 
+                  className="dark-input" 
+                  placeholder="Напр: прямо сейчас / 20:00 МСК" 
+                  value={customTime} 
+                  onChange={e => setCustomTime(e.target.value)} 
+                />
               </div>
             </div>
 
-            <div className="form-section" style={{marginTop: '20px'}}>
-              <label style={{color: '#888', display: 'block', marginBottom: '8px'}}>Дополнительный комментарий</label>
-              <textarea className="dark-input" style={{height: '120px', resize: 'none'}} placeholder="Напишите, кого вы ищете, ваш возраст или стиль игры..." value={comment} onChange={e => setComment(e.target.value)} />
+            <div className="input-group" style={{marginTop: '15px'}}>
+              <label>Комментарий к поиску</label>
+              <textarea 
+                className="dark-input" 
+                style={{height: '100px', resize: 'none'}} 
+                placeholder="Расскажите о себе: возраст, стиль игры, кого именно ищете..." 
+                value={comment} 
+                onChange={e => setComment(e.target.value)} 
+              />
             </div>
 
-            <button className="main-btn" onClick={sendPost} style={{marginTop: '30px', width: '100%', fontSize: '16px', fontWeight: 'bold'}}>Опубликовать в Discord</button>
+            <button className="main-btn" onClick={sendPost} style={{marginTop: '25px', width: '100%', fontWeight: 'bold'}}>
+              Опубликовать в Discord
+            </button>
           </div>
         )}
 
         {activeTab === 'rules' && (
-          <div className="main-card animate-in scrollable-rules" style={{padding: '30px'}}>
-            <h3 className="glow-text" style={{marginBottom: '20px'}}>Правила TeamFinder</h3>
-            <div className="rules-wrapper">
-              {[...Array(14)].map((_, i) => (
-                <div key={i} className="rule-item" style={{marginBottom: '15px', borderLeft: '2px solid #5865F2', paddingLeft: '15px'}}>
-                  <p style={{color: '#ccc', lineHeight: '1.5'}}>
-                    <strong style={{color: '#5865F2'}}>ПРАВИЛО {i+1}:</strong> Относитесь к другим участникам проекта с уважением. Использование мата, токсичность и оскорбления в чате или в описании заявок ведут к блокировке доступа.
-                  </p>
+          <div className="main-card animate-in" style={{padding: '30px'}}>
+            <h3 className="glow-text">Правила платформы TeamFinder</h3>
+            <div className="rules-scroll" style={{maxHeight: '400px', overflowY: 'auto', marginTop: '20px'}}>
+              {[
+                "Уважительное отношение ко всем участникам сообщества.",
+                "Запрещено использование нецензурной лексики в публичном чате.",
+                "Запрещена любая форма дискриминации и оскорблений.",
+                "Запрещен спам одинаковыми сообщениями в чате.",
+                "Реклама сторонних ресурсов без согласования запрещена.",
+                "Запрещено вводить в заблуждение по поводу своего ранга.",
+                "Троллинг и токсичное поведение наказываются баном.",
+                "Запрещена публикация шок-контента или вредоносных ссылок.",
+                "Администрация оставляет за собой право модерировать контент.",
+                "Один пользователь — один аккаунт в системе.",
+                "Запрещена продажа услуг и аккаунтов.",
+                "Соблюдайте правила платформы Discord.",
+                "Будьте дружелюбны и помогайте новичкам.",
+                "Желаем всем приятной игры и побед!"
+              ].map((text, i) => (
+                <div key={i} style={{padding: '12px', borderBottom: '1px solid #111', color: '#888'}}>
+                  <strong style={{color: '#5865F2', marginRight: '10px'}}>{i + 1}.</strong> {text}
                 </div>
               ))}
             </div>
@@ -277,18 +312,21 @@ function App() {
         )}
 
         {activeTab === 'info' && (
-          <div className="main-card animate-in info-padding" style={{padding: '30px'}}>
-            <h3 className="glow-text" style={{marginBottom: '20px'}}>Информация о проекте</h3>
-            <div className="info-content" style={{color: '#aaa', lineHeight: '1.8'}}>
-              <p><strong>TeamFinder</strong> — это веб-платформа, созданная для того, чтобы объединить игроков в реальном времени. Мы интегрировали наш сайт напрямую с Discord-сервером через систему вебхуков.</p>
-              <p style={{marginTop: '15px'}}>Когда вы создаете заявку во вкладке "Поиск", она мгновенно появляется в специальном канале нашего сервера, где её могут увидеть тысячи потенциальных напарников.</p>
-              <p style={{marginTop: '15px'}}>Система авторизации Discord используется для подтверждения вашей личности и отображения вашего реального ника и аватара в чате.</p>
+          <div className="main-card animate-in" style={{padding: '30px'}}>
+            <h3 className="glow-text">О нашем проекте</h3>
+            <div style={{marginTop: '20px', color: '#aaa', lineHeight: '1.6'}}>
+              <p><strong>TeamFinder</strong> — это инновационный мост между вебом и игровым сообществом в Discord.</p>
+              <p style={{marginTop: '15px'}}>Наша цель — максимально сократить время на поиск адекватных напарников для ваших любимых игр. Вам больше не нужно листать сотни сообщений в каналах: просто создайте заявку, и она мгновенно отобразится на нашем сервере с красивым оформлением.</p>
+              <p style={{marginTop: '15px'}}>Мы используем официальную авторизацию Discord, что гарантирует подлинность профилей. Все ваши сообщения в чате также дублируются через систему вебхуков для максимальной интеграции.</p>
+              <p style={{marginTop: '25px', color: '#5865F2'}}>Спасибо, что вы с нами!</p>
             </div>
           </div>
         )}
       </main>
 
-      <a href="https://discord.gg/U6qUFYq8" target="_blank" rel="noreferrer" className="discord-fixed-btn">D<span>ISC</span></a>
+      <a href="https://discord.gg/U6qUFYq8" target="_blank" rel="noreferrer" className="discord-fixed-btn">
+        Discord
+      </a>
     </div>
   );
 }
