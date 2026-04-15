@@ -138,3 +138,51 @@ h3 { font-size: 24px; font-weight: 800; margin: 0 0 30px; }
 
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 10px 15px;
+    height: auto;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav-logo { font-size: 20px; margin-bottom: 10px; width: 100%; text-align: center; }
+
+  .nav-links {
+    order: 3;
+    width: 100%;
+    justify-content: space-around;
+    padding: 10px 0;
+    border-top: 1px solid #222;
+  }
+
+  .main-card {
+    width: 95% !important;
+    margin: 15px auto !important;
+    padding: 15px !important;
+  }
+
+  .row {
+    flex-direction: column !important;
+    gap: 15px !important;
+  }
+
+  .dark-input, .main-btn {
+    width: 100% !important;
+    font-size: 16px !important; /* Чтобы iPhone не увеличивал экран при вводе */
+  }
+
+  .chat-box { height: 300px; }
+
+  .discord-fixed-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 0; /* Прячем текст, оставляем иконку (если есть) */
+    background-image: url('https://assets-global.website-files.com/6257adef93867e3d8405e904/636e0a6cae3b3c7634696951_icon_clyde_blurple_RGB.png');
+    background-size: 60%;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+}
