@@ -66,7 +66,9 @@ function App() {
   const [user, setUser] = useState(null);
   const chatEndRef = useRef(null);
 
-  // Твой личный Webhook для интеграции с Discord
+  // ОБНОВЛЕННАЯ ССЫЛКА (ПРОВЕРЬ БУКВЫ!)
+  const CLIENT_ID = '1493708400847093891';
+  const REDIRECT_URI = 'https://z1ylfalp0m.onrender.com'; 
   const WEBHOOK = "https://discord.com/api/webhooks/1493683255042506752/tftDYrEwUHbaQMqEq8gVkgcmj_kLAwrQNJA3l2siO050tNhliRN1FcCfC_aktjtNtKEb";
 
   useEffect(() => {
@@ -74,15 +76,20 @@ function App() {
     const code = urlParams.get('code');
     
     if (code) {
-      // Здесь должна быть логика обмена code на данные пользователя через твой бэкенд
-      // Для теста эмулируем получение твоего имени из Discord
-      const discordUser = { 
-        name: "Discord User", // В реальности здесь будет ответ от API Discord
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Discord" 
-      };
-      setUser(discordUser);
-      localStorage.setItem('tf_user', JSON.stringify(discordUser));
-      window.history.replaceState({}, document.title, "/");
+      fetch(`${REDIRECT_URI}/api/auth/discord`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.name) {
+          setUser(data);
+          localStorage.setItem('tf_user', JSON.stringify(data));
+          window.history.replaceState({}, document.title, "/");
+        }
+      })
+      .catch(err => console.error("Ошибка авторизации:", err));
     } else {
       const saved = localStorage.getItem('tf_user');
       if (saved) setUser(JSON.parse(saved));
@@ -96,7 +103,8 @@ function App() {
   }, [messages, activeTab]);
 
   const login = () => {
-    window.location.href = "https://discord.com/oauth2/authorize?client_id=1493708400847093891&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000&scope=identify";
+    const authUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=identify`;
+    window.location.href = authUrl;
   };
 
   const logout = () => {
@@ -108,20 +116,14 @@ function App() {
 
   const handleSendMessage = async (text) => {
     if (!user) return login();
-    
     const newMsg = { id: Date.now(), user: user.name, text: text, avatar: user.avatar };
     setMessages(prev => [...prev, newMsg]);
-
-    // ОТПРАВКА В ТВОЙ ДИСКОРД ЧЕРЕЗ ВЕБХУК
+    
     await fetch(WEBHOOK, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        username: user.name, 
-        avatar_url: user.avatar, 
-        content: `**[ЧАТ]** ${text}` 
-      }),
-    }).catch(err => console.error("Ошибка вебхука:", err));
+      body: JSON.stringify({ username: user.name, avatar_url: user.avatar, content: `**[ЧАТ]** ${text}` }),
+    });
   };
 
   const sendPost = async () => {
@@ -129,39 +131,25 @@ function App() {
     if (!comment || !customTime) return alert("Заполни все поля!");
     const r = RANKS[game][rankIndex];
     
-    const systemMsg = { 
-      id: Date.now(), 
-      system: true, 
-      text: `${user.name} ищет напарников в ${game} (${r.name})` 
-    };
+    const systemMsg = { id: Date.now(), system: true, text: `${user.name} ищет напарников в ${game}` };
     setMessages(prev => [...prev, systemMsg]);
 
-    // ФОРМИРУЕМ КРАСИВЫЙ EMBED ДЛЯ ВЕБХУКА
     const embed = {
       embeds: [{
         title: "⚡ Новый поиск напарника!",
-        description: `Пользователь **${user.name}** ищет тимейтов.`,
         color: parseInt(r.color.replace('#', ''), 16),
         thumbnail: { url: user.avatar },
         fields: [
-          { name: "🎮 Игра", value: game, inline: true },
-          { name: "🏆 Ранг", value: r.name, inline: true },
-          { name: "⏰ Когда", value: customTime, inline: true },
-          { name: "📝 Описание", value: comment }
-        ],
-        footer: { text: "TeamFinder Website Integration" }
+          { name: "Игра", value: game, inline: true },
+          { name: "Ранг", value: r.name, inline: true },
+          { name: "Когда", value: customTime, inline: true },
+          { name: "Описание", value: comment }
+        ]
       }]
     };
 
-    await fetch(WEBHOOK, { 
-      method: 'POST', 
-      headers: { 'Content-Type': 'application/json' }, 
-      body: JSON.stringify(embed) 
-    });
-
-    setComment("");
-    setCustomTime("");
-    setActiveTab('lobby');
+    await fetch(WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(embed) });
+    setComment(""); setCustomTime(""); setActiveTab('lobby');
   };
 
   return (
@@ -174,10 +162,9 @@ function App() {
           <button className={activeTab === 'rules' ? 'active' : ''} onClick={() => setActiveTab('rules')}>Правила</button>
           <button className={activeTab === 'info' ? 'active' : ''} onClick={() => setActiveTab('info')}>О проекте</button>
         </div>
-        
         {user ? (
-          <div className="user-profile" onClick={logout}>
-            <img src={user.avatar} alt="ava" />
+          <div className="user-profile" onClick={logout} style={{cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px'}}>
+            <img src={user.avatar} alt="ava" style={{width: '30px', borderRadius: '50%'}} />
             <span>{user.name}</span>
           </div>
         ) : (
@@ -188,43 +175,32 @@ function App() {
       <main className="content">
         {activeTab === 'lobby' && (
           <div className="main-card compact animate-in">
-            <div className="card-header"><span></span> Live Discord Sync</div>
-            
+            <div className="card-header" style={{padding: '10px', fontSize: '12px', color: '#555'}}>Live Sync Active</div>
             {!user ? (
-              <div className="chat-box-auth-prompt form-padding flex-center-col">
+              <div className="chat-box-auth-prompt flex-center-col">
                 <h3 className="glow-text">Чат TeamFinder</h3>
-                <p style={{ color: '#888', marginBottom: '30px' }}>Авторизуйтесь, чтобы общаться с игроками напрямую через Discord.</p>
-                <button className="main-btn-auth" onClick={login}>Авторизоваться</button>
+                <button className="main-btn" style={{width: '200px'}} onClick={login}>Авторизоваться</button>
               </div>
             ) : (
               <>
                 <div className="chat-box">
-                  {messages.length === 0 ? (
-                    <div className="empty-chat">Сообщений пока нет. Будь первым!</div>
-                  ) : (
-                    messages.map(m => (
-                      <div key={m.id} className={"msg-row " + (m.system ? 'system' : '')}>
-                        {!m.system && <img src={m.avatar} className="chat-ava" alt="" />}
-                        <div className="msg-bubble">
-                          {!m.system && <span className="msg-user">{m.user}</span>}
-                          <span className="msg-text">{m.text}</span>
-                        </div>
+                  {messages.map(m => (
+                    <div key={m.id} className={"msg-row " + (m.system ? 'system' : '')}>
+                      {!m.system && <img src={m.avatar} className="chat-ava" alt="" />}
+                      <div className="msg-bubble">
+                        {!m.system && <span className="msg-user">{m.user}</span>}
+                        <span className="msg-text">{m.text}</span>
                       </div>
-                    ))
-                  )}
+                    </div>
+                  ))}
                   <div ref={chatEndRef} />
                 </div>
-                
                 <div className="input-box">
-                  <input 
-                    placeholder="Ваше сообщение в Discord..." 
-                    onKeyDown={(e) => { 
-                      if (e.key === 'Enter' && e.target.value.trim()) { 
-                        handleSendMessage(e.target.value); 
-                        e.target.value = ""; 
-                      } 
-                    }} 
-                  />
+                  <input placeholder="Напишите сообщение..." onKeyDown={(e) => { 
+                    if (e.key === 'Enter' && e.target.value.trim()) { 
+                      handleSendMessage(e.target.value); e.target.value = ""; 
+                    } 
+                  }} />
                 </div>
               </>
             )}
@@ -234,55 +210,40 @@ function App() {
         {activeTab === 'create' && (
           <div className="main-card compact animate-in form-padding">
             <h3 className="glow-text">Создать заявку</h3>
-            <div className="input-group">
-              <label>Выбери игру</label>
-              <select value={game} onChange={(e) => setGame(e.target.value)} className="dark-input themed-select">
-                {Object.keys(RANKS).map(g => <option key={g} value={g} style={{backgroundColor: '#0d0d1a'}}>{g}</option>)}
+            <select value={game} onChange={(e) => setGame(e.target.value)} className="dark-input" style={{marginBottom: '15px'}}>
+              {Object.keys(RANKS).map(g => <option key={g} value={g}>{g}</option>)}
+            </select>
+            <div className="row" style={{display: 'flex', gap: '15px', marginBottom: '15px'}}>
+              <select className="dark-input" value={rankIndex} onChange={(e) => setRankIndex(parseInt(e.target.value))} style={{color: RANKS[game][rankIndex].color}}>
+                {RANKS[game].map((r, i) => <option key={i} value={i} style={{color: r.color}}>{r.name}</option>)}
               </select>
+              <input className="dark-input" placeholder="Время игры" value={customTime} onChange={e => setCustomTime(e.target.value)} />
             </div>
-            <div className="row">
-              <div className="input-group">
-                <label>Твой ранг</label>
-                <select className="dark-input themed-select" value={rankIndex} onChange={(e) => setRankIndex(parseInt(e.target.value))} style={{color: RANKS[game][rankIndex].color}}>
-                  {RANKS[game].map((r, i) => <option key={i} value={i} style={{color: r.color, backgroundColor: '#0d0d1a'}}>{r.name}</option>)}
-                </select>
-              </div>
-              <div className="input-group">
-                <label>Когда</label>
-                <input className="dark-input" placeholder="Напр: сейчас" value={customTime} onChange={e => setCustomTime(e.target.value)} />
-              </div>
-            </div>
-            <div className="input-group">
-              <label>Комментарий</label>
-              <textarea className="dark-input" style={{height: '100px'}} placeholder="Напиши что-нибудь о себе..." value={comment} onChange={e => setComment(e.target.value)} />
-            </div>
-            <button className="main-btn" onClick={sendPost}>Опубликовать в Discord</button>
+            <textarea className="dark-input" style={{height: '100px', resize: 'none', marginBottom: '15px'}} placeholder="Комментарий..." value={comment} onChange={e => setComment(e.target.value)} />
+            <button className="main-btn" onClick={sendPost}>Опубликовать</button>
           </div>
         )}
 
         {activeTab === 'rules' && (
           <div className="main-card compact animate-in scrollable-rules">
             <h3 className="glow-text">Правила</h3>
-            <div className="rules-list">
-              {[...Array(14)].map((_, i) => (
-                <p key={i}><span>{i+1}.</span> Правило номер {i+1}: Будьте вежливы и уважайте других игроков.</p>
-              ))}
-            </div>
+            {[...Array(14)].map((_, i) => (
+              <p key={i} style={{textAlign: 'left', color: '#888', marginBottom: '10px'}}>
+                <span style={{color: '#5865F2', fontWeight: 'bold'}}>{i+1}.</span> Правило номер {i+1}: Уважайте других игроков.
+              </p>
+            ))}
           </div>
         )}
 
         {activeTab === 'info' && (
           <div className="main-card compact animate-in info-padding">
-            <h3 className="glow-text">TeamFinder</h3>
-            <div className="text-content">
-              <p>Это автоматизированная платформа для поиска тиммейтов.</p>
-              <p>Все сообщения синхронизируются с нашим Discord сервером в реальном времени.</p>
-            </div>
+            <h3 className="glow-text">О проекте</h3>
+            <p style={{color: '#ccc', textAlign: 'left'}}>TeamFinder — автоматическая система поиска напарников для игр.</p>
           </div>
         )}
       </main>
 
-      <a href="https://discord.gg" target="_blank" rel="noreferrer" className="discord-fixed-btn">Наш Discord</a>
+      <a href="https://discord.gg/U6qUFYq8" target="_blank" rel="noreferrer" className="discord-fixed-btn">Наш Discord</a>
     </div>
   );
 }
