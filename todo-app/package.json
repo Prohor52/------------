@@ -3,6 +3,7 @@
   "version": "1.0.0",
  "scripts": {
   "start": "node server.js",
-  "build": "react-scripts build"
+  "build": "react-scripts build",
+  "postinstall": "npm run build"
 }
 }
